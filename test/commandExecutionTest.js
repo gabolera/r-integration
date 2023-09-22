@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const validator = require('../src/R.js')
+const validator = require('../dist/index.js')
 
 describe("validator executeRCommand()", () => {
 
