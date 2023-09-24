@@ -1,10 +1,3 @@
-type OSType = "win" | "lin" | "mac";
-/**
- * Get the current Operating System name
- *
- * @returns {OSType} the operating system short name
- */
-export declare function getCurrentOs(): OSType;
 /**
  * Execute in R a specific one line command
  *
@@ -14,7 +7,7 @@ export declare function getCurrentOs(): OSType;
  * @returns {String[]} an array containing all the results from the command
  * execution output, 0 if there was an error
  */
-declare function executeRCommand(command: string, RBinariesLocation: string): string[];
+export declare function executeRCommand(command: string, RBinariesLocation: string): string[];
 /**
  * Execute in R a specific one line command - asynchronously
  *
@@ -24,7 +17,7 @@ declare function executeRCommand(command: string, RBinariesLocation: string): st
  * @returns {Promise<string>} an array containing all the results from the command
  * execution output, null if there was an error
  */
-declare function executeRCommandAsync(command: string, RBinariesLocation: string): Promise<string>;
+export declare function executeRCommandAsync(command: string, RBinariesLocation: string): Promise<string>;
 /**
  * Execute in R all the commands in the file specified by the parameter
  * fileLocation.
@@ -41,7 +34,7 @@ declare function executeRCommandAsync(command: string, RBinariesLocation: string
  * @returns {String[]} an array containing all the results from the command
  * execution output, 0 if there was an error
  */
-declare function executeRScript(fileLocation: string, RBinariesLocation?: string): string[];
+export declare function executeRScript(fileLocation: string, RBinariesLocation?: string): string[];
 /**
  * Calls a R function located in an external script with parameters and returns
  * the result
@@ -54,7 +47,7 @@ declare function executeRScript(fileLocation: string, RBinariesLocation?: string
  * alternative location for the Rscript binary
  * @returns {string} the execution output of the function, 0 in case of error
  */
-declare function callMethod(fileLocation: string, methodName: string, params: Object, RBinariesLocation: string): string | string[] | false;
+export declare function callMethod(fileLocation: string, methodName: string, params: Object, RBinariesLocation: string): string | string[] | false;
 /**
  * Calls a R function with parameters and returns the result - async
  *
@@ -65,7 +58,7 @@ declare function callMethod(fileLocation: string, methodName: string, params: Ob
  * alternative location for the Rscript binary
  * @returns {Promise<string>} the execution output of the function
  */
-declare function callMethodAsync(fileLocation: string, methodName: string, params: string[], RBinariesLocation: string): Promise<string>;
+export declare function callMethodAsync(fileLocation: string, methodName: string, params: string[], RBinariesLocation: string): Promise<string>;
 /**
  * Calls a standard R function with parameters and returns the result
  *
@@ -76,13 +69,5 @@ declare function callMethodAsync(fileLocation: string, methodName: string, param
  * alternative location for the Rscript binary
  * @returns {string} the execution output of the function, 0 in case of error
  */
-declare function callStandardMethod(methodName: string, params: Object, RBinariesLocation: string): string | string[] | false;
-declare const _default: {
-    executeRCommand: typeof executeRCommand;
-    executeRCommandAsync: typeof executeRCommandAsync;
-    executeRScript: typeof executeRScript;
-    callMethod: typeof callMethod;
-    callMethodAsync: typeof callMethodAsync;
-    callStandardMethod: typeof callStandardMethod;
-};
-export default _default;
+export declare function callStandardMethod(methodName: string, params: Object, RBinariesLocation: string): string | string[] | false;
+export declare function executeRRawScript(rawScript: string, injects?: any): Promise<any>;

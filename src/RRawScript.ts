@@ -2,7 +2,6 @@ import { readFileSync, unlinkSync, writeFileSync } from "fs";
 import { RandomName } from './Utils';
 import Papa from 'papaparse';
 import path from "path";
-import R from "./R";
 
 interface ParamInterface {
   param: string;
@@ -22,12 +21,10 @@ export class RRawScript {
   constructor(private _script: string) {}
 
   addParam(param: string, value: any | any[]) {
-    const exists = this._paramsParse.filter((p) => {
-      return p.param === param;
-    });
+    const exists = this.getParam(param)
 
     if (exists) {
-      exists.values = value;
+      exists.value = value;
     } else {
       this._paramsParse.push({
         param: param.toLocaleLowerCase(),
@@ -60,7 +57,7 @@ export class RRawScript {
       }
     }
 
-    const regexOutput = /NODE_OUTPUT\((['"`])(.*?)\1\)/g;
+    const regexOutput = /NODE_OUTPUT\(['\"`]?(.*?)['\"`]?\)/g;
     let matchOutput;
     while ((matchOutput = regexOutput.exec(this._script))) {
       let randNameOutput = `${RandomName(11)}_OUT.csv`;
@@ -87,29 +84,7 @@ export class RRawScript {
     return path.join(this._tempFolder, name + '.csv');
   }
 
-  async execute(){
-    if(!this._parsed){
-      this.parse()
-    }
-
-    if(!this._scriptPath){
-      throw new Error('Script not parsed');
-    }
-
-    let results = []
-    try {
-      await R.executeRScript(this._scriptPath);
-      results = await this.readOutputData();
-    } catch (e) {
-      console.log(e)
-    }
-
-    this.deleteTemporaryFiles();
-
-    return results
-  }
-
-  private async readOutputData(): Promise<any[] | any> {
+  public async readOutputData(): Promise<any[] | any> {
     if(!this._outputFile){
       return;
     }
@@ -124,7 +99,7 @@ export class RRawScript {
     return csv.data;
   }
 
-  private deleteTemporaryFiles() {
+  public deleteTemporaryFiles() {
     let deletedErrors = [];
     for(const file of this._createdFiles){
       try {
@@ -138,5 +113,17 @@ export class RRawScript {
       console.error(`Error on delete temporary files from ${deletedErrors.join(', ')}`)
     }
 
+  }
+
+  public execute(){
+    if(!this._parsed){
+      this.parse()
+    }
+
+    if(!this._scriptPath){
+      throw new Error('Script not parsed');
+    }
+
+    return this._scriptPath;
   }
 }

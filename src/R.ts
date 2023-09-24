@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from "child_process";
 import { existsSync, readdirSync } from "fs";
 import { join } from "path";
+import { RRawScript } from './RRawScript';
 
 type OSType = "win" | "lin" | "mac";
 
@@ -9,7 +10,7 @@ type OSType = "win" | "lin" | "mac";
  * 
  * @returns {OSType} the operating system short name 
  */
-export function getCurrentOs(): OSType {
+function getCurrentOs(): OSType {
   var processPlatform = process.platform;
   var currentOs: OSType;
 
@@ -154,7 +155,7 @@ function isRscriptInstallaed(path?: string): string | false {
  * @returns {String[]} an array containing all the results from the command
  * execution output, 0 if there was an error
  */
-function executeRCommand(command: string, RBinariesLocation: string): string[] {
+export function executeRCommand(command: string, RBinariesLocation: string): string[] {
   let RscriptBinaryPath = isRscriptInstallaed(RBinariesLocation);
   let output: string | string[];
 
@@ -184,7 +185,7 @@ function executeRCommand(command: string, RBinariesLocation: string): string[] {
  * @returns {Promise<string>} an array containing all the results from the command
  * execution output, null if there was an error
  */
-async function executeRCommandAsync(
+export async function executeRCommandAsync(
   command: string,
   RBinariesLocation: string
 ): Promise<string> {
@@ -223,7 +224,7 @@ async function executeRCommandAsync(
  * @returns {String[]} an array containing all the results from the command
  * execution output, 0 if there was an error
  */
-function executeRScript(
+export function executeRScript(
   fileLocation: string,
   RBinariesLocation?: string
 ): string[] {
@@ -292,7 +293,7 @@ function convertParamsArray(params: Object): string {
  * alternative location for the Rscript binary
  * @returns {string} the execution output of the function, 0 in case of error
  */
-function callMethod(
+export function callMethod(
   fileLocation: string,
   methodName: string,
   params: Object,
@@ -346,7 +347,7 @@ function callMethod(
  * alternative location for the Rscript binary
  * @returns {Promise<string>} the execution output of the function
  */
-async function callMethodAsync(
+export async function callMethodAsync(
   fileLocation: string,
   methodName: string,
   params: string[],
@@ -404,7 +405,7 @@ async function callMethodAsync(
  * alternative location for the Rscript binary
  * @returns {string} the execution output of the function, 0 in case of error
  */
-function callStandardMethod(
+export function callStandardMethod(
   methodName: string,
   params: Object,
   RBinariesLocation: string
@@ -494,11 +495,26 @@ function filterMultiline(commandResult: string): string[] {
   return data;
 }
 
-export default {
-  executeRCommand,
-  executeRCommandAsync,
-  executeRScript,
-  callMethod,
-  callMethodAsync,
-  callStandardMethod,
-};
+export async function executeRRawScript(rawScript: string, injects: any = {}){
+  let rawTemp = new RRawScript(rawScript)
+  
+  if(injects){
+    for (const chave in injects) {
+      rawTemp.addParam(chave, injects[chave])
+    }
+      
+  }
+
+    let results = []
+    try {
+      await executeRScript(rawTemp.execute());
+      results = await rawTemp.readOutputData();
+    } catch (e) {
+      console.log(e)
+    }
+
+    rawTemp.deleteTemporaryFiles();
+
+    return results
+}
+

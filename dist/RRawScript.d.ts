@@ -17,8 +17,8 @@ export declare class RRawScript {
     getParam(param: string): ParamInterface;
     private parse;
     private generateInput;
-    execute(): Promise<any>;
-    private readOutputData;
-    private deleteTemporaryFiles;
+    readOutputData(): Promise<any[] | any>;
+    deleteTemporaryFiles(): void;
+    execute(): string;
 }
 export {};

@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentOs = void 0;
+exports.executeRRawScript = exports.callStandardMethod = exports.callMethodAsync = exports.callMethod = exports.executeRScript = exports.executeRCommandAsync = exports.executeRCommand = void 0;
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const path_1 = require("path");
+const RRawScript_1 = require("./RRawScript");
 /**
  * Get the current Operating System name
  *
@@ -25,7 +26,6 @@ function getCurrentOs() {
     }
     return currentOs;
 }
-exports.getCurrentOs = getCurrentOs;
 /**
  * Execute a command in the OS shell (used to execute R command)
  *
@@ -155,6 +155,7 @@ function executeRCommand(command, RBinariesLocation) {
     }
     return output;
 }
+exports.executeRCommand = executeRCommand;
 /**
  * Execute in R a specific one line command - asynchronously
  *
@@ -183,6 +184,7 @@ async function executeRCommandAsync(command, RBinariesLocation) {
         }
     });
 }
+exports.executeRCommandAsync = executeRCommandAsync;
 /**
  * Execute in R all the commands in the file specified by the parameter
  * fileLocation.
@@ -221,6 +223,7 @@ function executeRScript(fileLocation, RBinariesLocation) {
     }
     return output;
 }
+exports.executeRScript = executeRScript;
 /**
  * Formats the parameters so that R could read them
  *
@@ -291,6 +294,7 @@ function callMethod(fileLocation, methodName, params, RBinariesLocation) {
     output = executeRCommand(`source('${fileLocation}') ; print(${methodSyntax})`, RBinariesLocation);
     return output;
 }
+exports.callMethod = callMethod;
 /**
  * Calls a R function with parameters and returns the result - async
  *
@@ -338,6 +342,7 @@ async function callMethodAsync(fileLocation, methodName, params, RBinariesLocati
         });
     });
 }
+exports.callMethodAsync = callMethodAsync;
 /**
  * Calls a standard R function with parameters and returns the result
  *
@@ -379,6 +384,7 @@ function callStandardMethod(methodName, params, RBinariesLocation) {
     output = executeRCommand(`print(${methodSyntax})`, RBinariesLocation);
     return output;
 }
+exports.callStandardMethod = callStandardMethod;
 /**
  * Filters the multiline output from the executeRcommand and executeRScript
  * functions using regular expressions
@@ -427,11 +433,22 @@ function filterMultiline(commandResult) {
     }
     return data;
 }
-exports.default = {
-    executeRCommand,
-    executeRCommandAsync,
-    executeRScript,
-    callMethod,
-    callMethodAsync,
-    callStandardMethod,
-};
+async function executeRRawScript(rawScript, injects = {}) {
+    let rawTemp = new RRawScript_1.RRawScript(rawScript);
+    if (injects) {
+        for (const chave in injects) {
+            rawTemp.addParam(chave, injects[chave]);
+        }
+    }
+    let results = [];
+    try {
+        await executeRScript(rawTemp.execute());
+        results = await rawTemp.readOutputData();
+    }
+    catch (e) {
+        console.log(e);
+    }
+    rawTemp.deleteTemporaryFiles();
+    return results;
+}
+exports.executeRRawScript = executeRRawScript;

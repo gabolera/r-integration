@@ -8,7 +8,6 @@ const fs_1 = require("fs");
 const Utils_1 = require("./Utils");
 const papaparse_1 = __importDefault(require("papaparse"));
 const path_1 = __importDefault(require("path"));
-const R_1 = __importDefault(require("./R"));
 class RRawScript {
     constructor(_script) {
         this._script = _script;
@@ -19,11 +18,9 @@ class RRawScript {
         this._parsed = false;
     }
     addParam(param, value) {
-        const exists = this._paramsParse.filter((p) => {
-            return p.param === param;
-        });
+        const exists = this.getParam(param);
         if (exists) {
-            exists.values = value;
+            exists.value = value;
         }
         else {
             this._paramsParse.push({
@@ -54,7 +51,7 @@ class RRawScript {
                 this._script = this._script.replace(match[0], paramValue.value);
             }
         }
-        const regexOutput = /NODE_OUTPUT\((['"`])(.*?)\1\)/g;
+        const regexOutput = /NODE_OUTPUT\(['\"`]?(.*?)['\"`]?\)/g;
         let matchOutput;
         while ((matchOutput = regexOutput.exec(this._script))) {
             let randNameOutput = `${(0, Utils_1.RandomName)(11)}_OUT.csv`;
@@ -76,24 +73,6 @@ class RRawScript {
         let csv = Buffer.from(papaparse_1.default.unparse(dataDbArray, { delimiter: ";" }), "utf8");
         (0, fs_1.writeFileSync)(`${this._tempFolder}/${name}.csv`, csv);
         return path_1.default.join(this._tempFolder, name + '.csv');
-    }
-    async execute() {
-        if (!this._parsed) {
-            this.parse();
-        }
-        if (!this._scriptPath) {
-            throw new Error('Script not parsed');
-        }
-        let results = [];
-        try {
-            await R_1.default.executeRScript(this._scriptPath);
-            results = await this.readOutputData();
-        }
-        catch (e) {
-            console.log(e);
-        }
-        this.deleteTemporaryFiles();
-        return results;
     }
     async readOutputData() {
         if (!this._outputFile) {
@@ -121,6 +100,15 @@ class RRawScript {
         if (deletedErrors.length > 0) {
             console.error(`Error on delete temporary files from ${deletedErrors.join(', ')}`);
         }
+    }
+    execute() {
+        if (!this._parsed) {
+            this.parse();
+        }
+        if (!this._scriptPath) {
+            throw new Error('Script not parsed');
+        }
+        return this._scriptPath;
     }
 }
 exports.RRawScript = RRawScript;
