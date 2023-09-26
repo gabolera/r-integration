@@ -81,3 +81,66 @@ describe("validator callStandardMethod()", () => {
     })
 
 })
+
+describe("validator executeRRawScript()", () => {
+	it("should return array, in calculate latency with a raw script", async () => {
+		const dbData = [
+			{
+				aluno: 123456,
+				q1: 1,
+				q2: 1,
+				q3: 1,
+				q4: 0,
+			},
+			{
+				aluno: 123426,
+				q1: 0,
+				q2: 1,
+				q3: 1,
+				q4: 0,
+			},
+			{
+				aluno: 3312,
+				q1: 1,
+				q2: 1,
+				q3: 1,
+				q4: 1,
+			},
+			{
+				aluno: 321231,
+				q1: 1,
+				q2: 0,
+				q3: 1,
+				q4: 0,
+			}
+		]
+		
+		const res = await validator.executeRRawScript(`
+		if(!require(ltm)) install.packages("ltm", repos = "http://cran.us.r-project.org")
+		
+		library("ltm")
+		
+		options(max.print=1000000)
+		options(scipen = 999, digits = 4)
+		data = NODE_INJECT('dados')
+		data[,c(2:NODE_INJECT('columns'))]
+		
+		IRT3pl = tpm(data[,c(2:NODE_INJECT('columns'))], type="latent.trait", IRT.param = T)
+		a=factor.scores.tpm(IRT3pl, resp.patterns = data[,c(2:NODE_INJECT('columns'))])
+		z1 = a$score.dat[,NODE_INJECT('columns')+2]
+		data[,1]
+		ajust = function(x){
+			return((x-min(x))/(max(x)-min(x))*100)
+		}
+		
+		data2 = cbind(data[,1],z1)
+		data3=cbind(data2,ajust(z1))
+		NODE_OUTPUT_TABLE(data3)`,
+		{
+			dados: dbData,
+			columns: 5
+		})
+
+		expect(res.length).to.greaterThanOrEqual(4)
+	})
+})

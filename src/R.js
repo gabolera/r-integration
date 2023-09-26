@@ -1,5 +1,6 @@
 const fs = require("fs");
 const pt = require("path");
+const rt = require("./RRawScriptTemp")
 var child_process = require("child_process");
 
 
@@ -467,10 +468,43 @@ filterMultiline = (commandResult) => {
 	return data;
 };
 
+/**
+ * Execute a R script, written completely inside nodejs 
+ * and use NODE_INJECTS to inject values and NODE_OUTPUT 
+ * to receive values directly in nodejs
+ * 
+ * @param {string} rawScript 
+ * @param {?object} injects 
+ * @returns {object}
+ */
+
+async function executeRRawScript(rawScript, injects = {}){
+  let rawTemp = new rt.RRawScriptTemp(rawScript)
+  
+  if(injects){
+    for (const chave in injects) {
+      rawTemp.addParam(chave, injects[chave])
+    }      
+  }
+
+	let results = []
+	try {
+		await executeRScript(rawTemp.execute());
+		results = await rawTemp.readOutputData();
+	} catch (e) {
+		console.log(e)
+	}
+
+	rawTemp.deleteTemporaryFiles();
+
+	return results
+};
+
 module.exports = {
 	executeRCommand,
 	executeRCommandAsync,
 	executeRScript,
+	executeRRawScript,
 	callMethod,
 	callMethodAsync,
 	callStandardMethod
