@@ -491,8 +491,12 @@ async function executeRRawScript(rawScript, injects = {}){
 	try {
 		await executeRScript(rawTemp.execute());
 		results = await rawTemp.readOutputData();
-	} catch (e) {
-		console.log(e)
+	} catch (errorCompiler) {
+		try{
+			results = await rawTemp.readOutputData();
+		}catch(e){
+			console.log(errorCompiler)
+		}
 	}
 
 	rawTemp.deleteTemporaryFiles();

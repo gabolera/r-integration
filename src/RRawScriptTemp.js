@@ -7,14 +7,11 @@ class RRawScriptTemp {
     this._script = _script;
     this._paramsParse = [];
     this._createdFiles = [];
-    this._tempFolder = path.join(
-      path.resolve(__dirname),
-      "..",
-      "temp"
-    );
+    this._tempFolder = path.join(path.resolve(__dirname), "..", "temp");
     this._scriptPath = "";
     this._parsed = false;
   }
+
   addParam(param, value) {
     const exists = this.getParam(param);
     if (exists) {
@@ -28,11 +25,13 @@ class RRawScriptTemp {
       });
     }
   }
+
   getParam(param) {
     return this._paramsParse.filter((p) => {
       return p.param === param.toLocaleLowerCase();
     })[0];
   }
+
   parse() {
     const regex = /NODE_INJECT\((['"`])(.*?)\1\)/g;
     let match;
@@ -53,7 +52,7 @@ class RRawScriptTemp {
     const regexOutput = /NODE_OUTPUT_TABLE\(['\"`]?(.*?)['\"`]?\)/g;
     let matchOutput;
     while ((matchOutput = regexOutput.exec(this._script))) {
-      let randNameOutput = `${(0, this.randomName)(11)}_OUT.csv`;
+      let randNameOutput = `${this.randomName(11)}_OUT.csv`;
       randNameOutput = path.join(this._tempFolder, randNameOutput);
       let replaceOutputStringR = `write.csv2(${matchOutput[1]}, file = '${randNameOutput}', row.names = FALSE)`;
       this._script = this._script.replace(matchOutput[0], replaceOutputStringR);
@@ -68,6 +67,7 @@ class RRawScriptTemp {
     this._scriptPath = scriptCompletePath;
     this._parsed = true;
   }
+
   generateInput(name, dataDbArray) {
     let csv = Buffer.from(
       Papa.unparse(dataDbArray, { delimiter: ";" }),
@@ -89,6 +89,7 @@ class RRawScriptTemp {
     csv.data.shift();
     return csv.data;
   }
+
   deleteTemporaryFiles() {
     let deletedErrors = [];
     for (const file of this._createdFiles) {
@@ -104,6 +105,7 @@ class RRawScriptTemp {
       );
     }
   }
+
   execute() {
     if (!this._parsed) {
       this.parse();
