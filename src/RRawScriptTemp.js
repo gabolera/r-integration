@@ -43,7 +43,7 @@ class RRawScriptTemp {
           paramValue.value
         );
         this._createdFiles.push(filePathInput);
-        let replaceInput = `read.csv(file = '${filePathInput}', header = T, fileEncoding = "UTF-8-BOM", sep = ";", na.strings = '..')`;
+        let replaceInput = `read.csv(file = '${filePathInput}', header = F, fileEncoding = "UTF-8-BOM", sep = ";", na.strings = '..')`;
         this._script = this._script.replace(match[0], replaceInput);
       } else {
         this._script = this._script.replace(match[0], paramValue.value);
