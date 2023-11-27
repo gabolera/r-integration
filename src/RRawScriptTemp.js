@@ -49,6 +49,7 @@ class RRawScriptTemp {
         this._script = this._script.replace(match[0], paramValue.value);
       }
     }
+
     const regexOutput = /NODE_OUTPUT_TABLE\(['\"`]?(.*?)['\"`]?\)/g;
     let matchOutput;
     while ((matchOutput = regexOutput.exec(this._script))) {
@@ -59,6 +60,24 @@ class RRawScriptTemp {
       this._createdFiles.push(randNameOutput);
       this._outputFile = randNameOutput;
     }
+
+    const regexAddArray = /NODE_INJECT_ARRAY\((['"`])([^'"]*?)\1(?:\s*,\s*(['"`])([^'"]*?)\3)*\)/g;
+    let matchArray;
+    while ((matchArray = regexAddArray.exec(this._script))) {
+      let paramValue = this.getParam(matchArray[2]);
+      if (paramValue.type === "array") {
+        let filePathInput = this.generateInput(
+          paramValue.randName,
+          paramValue.value
+        );
+        this._createdFiles.push(filePathInput);
+        let replaceInput = `read.csv(file = '${filePathInput}', header = ${matchArray[4] && matchArray[4] === 'S' ? 'S' : 'F'}, fileEncoding = "UTF-8-BOM", sep = ";", na.strings = '..')`;
+        this._script = this._script.replace(matchArray[0], replaceInput);
+      } else {
+        this._script = this._script.replace(matchArray[0], paramValue.value);
+      }
+    }
+
     // Create R Script
     let scriptName = `${(0, this.randomName)(11)}.r`;
     let scriptCompletePath = path.join(this._tempFolder, scriptName);
